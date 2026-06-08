@@ -1,20 +1,37 @@
 {
   "name": "nest-e2e-kit",
-  "version": "1.0.0",
+  "description": "E2E testing utilities for NestJS applications",
+  "version": "0.1.0",
   "main": "index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
     "dev": "tsup src/index.ts --watch",
     "test": "vitest",
     "prepublishOnly": "npm run build && npm test"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nestjs",
+    "e2e",
+    "testing",
+    "database",
+    "orm",
+    "mikro-orm",
+    "utilities",
+    "nest-e2e-kit"
+  ],
+  "author": "Nikolay Traykov",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
     "@mikro-orm/core": "^7.1.4",
-    "@types/jest": "^30.0.0",
     "@types/node": "^25.9.2",
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
