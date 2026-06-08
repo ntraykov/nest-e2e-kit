@@ -1,0 +1,26 @@
+{
+  "name": "nest-e2e-kit",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "dev": "tsup src/index.ts --watch",
+    "test": "vitest",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@mikro-orm/core": "^7.1.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.9.2",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8"
+  },
+  "peerDependencies": {
+    "@mikro-orm/core": "^6 || ^7"
+  }
+}
