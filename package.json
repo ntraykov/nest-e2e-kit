@@ -2,6 +2,7 @@
   "name": "nest-e2e-kit",
   "description": "E2E testing utilities for NestJS applications",
   "version": "0.1.0",
+  "type": "module",
   "main": "index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
