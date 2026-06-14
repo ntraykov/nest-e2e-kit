@@ -2,7 +2,7 @@
 
 Laravel-style database assertions for NestJS end-to-end tests.
 
-When you write E2E tests, you often need to verify that an HTTP request actually changed the database — a user was created, an order was stored, a soft-deleted row is gone. This package gives you a small, focused API for that, wired into NestJS via a dynamic module.
+When you write E2E tests, you often need to verify that an HTTP request actually changed the database - a user was created, an order was stored, a row was removed. This package gives you a small, focused API for that, wired into NestJS via a dynamic module.
 
 ## Why use this?
 
@@ -21,7 +21,7 @@ $this->assertDatabaseMissing('users', ['email' => 'deleted@example.com']);
 npm install nest-e2e-kit
 ```
 
-This package targets NestJS applications. `@nestjs/common` and `@nestjs/core` are listed as peer dependencies — npm will warn if they are missing, but a normal NestJS project already includes them. You do not need a separate install step.
+This package targets NestJS applications. `@nestjs/common` and `@nestjs/core` are listed as peer dependencies - npm will warn if they are missing, but a normal NestJS project already includes them. You do not need a separate install step.
 
 ## Quick start
 
@@ -123,7 +123,7 @@ describe('POST /users', () => {
 
 Registers a database connection for use in E2E tests. The connection is automatically closed when the Nest application shuts down.
 
-**Configuration** — choose one of two shapes:
+**Configuration** - choose one of two shapes:
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -204,7 +204,7 @@ try {
 }
 ```
 
-Works with any test runner (Jest, Vitest, Mocha) — no `expect()` globals required.
+Works with any test runner (Jest, Vitest, Mocha) - no `expect()` globals required.
 
 ## How it works
 
@@ -223,28 +223,10 @@ E2E test
 
 The module manages the connection lifecycle via `OnModuleDestroy`, so you don't need to clean up manually.
 
-## Soft deletes (`assertSoftDeleted` / `assertNotSoftDeleted`)
-
-Laravel provides these helpers for apps that use a `deleted_at` column convention. They are not included yet because they assume a specific schema (`deleted_at IS NOT NULL` / `IS NULL`) that not every NestJS project follows.
-
-For now, you can cover most cases with the existing API:
-
-```typescript
-// Hard-deleted row is gone
-await assertDatabaseMissing('users', { id: '1' })
-
-// Row still exists but is soft-deleted (if your app stores a timestamp)
-await assertDatabaseHas('users', { id: '1' })
-// then inspect deleted_at via a custom query, or wait for a future helper
-```
-
-If added later, `assertSoftDeleted` and `assertNotSoftDeleted` would likely accept an optional `deletedAtColumn` (defaulting to `deleted_at`) to support different naming conventions.
-
 ## Roadmap
 
 - [x] `assertDatabaseCount`
 - [x] `assertDatabaseEmpty`
-- [ ] `assertSoftDeleted` / `assertNotSoftDeleted`
 - [ ] PostgreSQL support
 - [ ] Additional E2E helpers (HTTP, fixtures)
 
