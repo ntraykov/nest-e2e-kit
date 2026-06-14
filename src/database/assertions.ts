@@ -23,6 +23,28 @@ export function assertions(app: INestApplication) {
       values,
     )
 
+  const executeCountQuery = async (
+    tableName: string,
+    fields?: Record<string, string>,
+  ): Promise<number> => {
+    if (fields && Object.keys(fields).length > 0) {
+      const conditions = buildConditions(fields)
+      const values = getValues(fields)
+      const results = await connection.query(
+        `SELECT COUNT(*) as count FROM \`${tableName}\` WHERE ${conditions}`,
+        values,
+      )
+
+      return Number((results[0] as { count: number }).count)
+    }
+
+    const results = await connection.query(
+      `SELECT COUNT(*) as count FROM \`${tableName}\``,
+    )
+
+    return Number((results[0] as { count: number }).count)
+  }
+
   const assertDatabaseHas = async (
     tableName: string,
     fields: Record<string, string>,
@@ -57,8 +79,40 @@ export function assertions(app: INestApplication) {
     }
   }
 
+  const assertDatabaseEmpty = async (tableName: string): Promise<void> => {
+    const count = await executeCountQuery(tableName)
+
+    if (count > 0) {
+      throw new DatabaseAssertionError(
+        `Expected "${tableName}" to be empty, but found ${count} record(s)`,
+        { tableName, count },
+      )
+    }
+  }
+
+  const assertDatabaseCount = async (
+    tableName: string,
+    expectedCount: number,
+    fields?: Record<string, string>,
+  ): Promise<void> => {
+    const count = await executeCountQuery(tableName, fields)
+
+    if (count !== expectedCount) {
+      const scope = fields
+        ? ` matching ${JSON.stringify(fields)}`
+        : ''
+
+      throw new DatabaseAssertionError(
+        `Expected ${expectedCount} record(s) in "${tableName}"${scope}, but found ${count}`,
+        { tableName, fields, expectedCount, count },
+      )
+    }
+  }
+
   return {
     assertDatabaseHas,
     assertDatabaseMissing,
+    assertDatabaseEmpty,
+    assertDatabaseCount,
   }
 }

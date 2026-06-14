@@ -21,11 +21,7 @@ $this->assertDatabaseMissing('users', ['email' => 'deleted@example.com']);
 npm install nest-e2e-kit
 ```
 
-Peer dependencies (install in your NestJS project if you haven't already):
-
-```bash
-npm install @nestjs/common @nestjs/core
-```
+This package targets NestJS applications. `@nestjs/common` and `@nestjs/core` are listed as peer dependencies — npm will warn if they are missing, but a normal NestJS project already includes them. You do not need a separate install step.
 
 ## Quick start
 
@@ -106,6 +102,18 @@ describe('POST /users', () => {
       id: '1',
     })
   })
+
+  it('tracks how many active users exist', async () => {
+    const { assertDatabaseCount } = assertions(app)
+
+    await assertDatabaseCount('users', 3, { status: 'active' })
+  })
+
+  it('ensures a scratch table was cleaned up', async () => {
+    const { assertDatabaseEmpty } = assertions(app)
+
+    await assertDatabaseEmpty('temp_imports')
+  })
 })
 ```
 
@@ -156,6 +164,27 @@ await assertDatabaseMissing('sessions', {
 
 Throws `DatabaseAssertionError` if a matching row is found.
 
+#### `assertDatabaseEmpty(table)`
+
+Asserts that a table contains no rows at all.
+
+```typescript
+await assertDatabaseEmpty('temp_imports')
+```
+
+Throws `DatabaseAssertionError` if the table has one or more rows.
+
+#### `assertDatabaseCount(table, count, fields?)`
+
+Asserts the number of rows in a table. An optional `fields` object filters the count, matching Laravel's `assertDatabaseCount`.
+
+```typescript
+await assertDatabaseCount('users', 5)
+await assertDatabaseCount('orders', 2, { status: 'pending' })
+```
+
+Throws `DatabaseAssertionError` if the actual count differs from `count`.
+
 ## Error handling
 
 Failed assertions throw `DatabaseAssertionError` with a descriptive message and diagnostic details:
@@ -186,15 +215,36 @@ E2E test
   │
   └─ assertions(app)            → resolves the connection from the app
         │
-        ├─ assertDatabaseHas()    → SELECT ... WHERE field = ?
-        └─ assertDatabaseMissing() → SELECT ... WHERE field = ?
+        ├─ assertDatabaseHas()       → SELECT ... WHERE field = ?
+        ├─ assertDatabaseMissing()   → SELECT ... WHERE field = ?
+        ├─ assertDatabaseEmpty()     → SELECT COUNT(*) ...
+        └─ assertDatabaseCount()     → SELECT COUNT(*) ... WHERE field = ?
 ```
 
 The module manages the connection lifecycle via `OnModuleDestroy`, so you don't need to clean up manually.
 
+## Soft deletes (`assertSoftDeleted` / `assertNotSoftDeleted`)
+
+Laravel provides these helpers for apps that use a `deleted_at` column convention. They are not included yet because they assume a specific schema (`deleted_at IS NOT NULL` / `IS NULL`) that not every NestJS project follows.
+
+For now, you can cover most cases with the existing API:
+
+```typescript
+// Hard-deleted row is gone
+await assertDatabaseMissing('users', { id: '1' })
+
+// Row still exists but is soft-deleted (if your app stores a timestamp)
+await assertDatabaseHas('users', { id: '1' })
+// then inspect deleted_at via a custom query, or wait for a future helper
+```
+
+If added later, `assertSoftDeleted` and `assertNotSoftDeleted` would likely accept an optional `deletedAtColumn` (defaulting to `deleted_at`) to support different naming conventions.
+
 ## Roadmap
 
-- [ ] `assertDatabaseCount`
+- [x] `assertDatabaseCount`
+- [x] `assertDatabaseEmpty`
+- [ ] `assertSoftDeleted` / `assertNotSoftDeleted`
 - [ ] PostgreSQL support
 - [ ] Additional E2E helpers (HTTP, fixtures)
 
